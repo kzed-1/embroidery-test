@@ -1,0 +1,146 @@
+<v-btn depressed color="pink">
+    <span>Sign Out</span>
+    <v-icon right>mdi-exit-to-app</v-icon>
+</v-btn>
+
+ <v-app-bar-nav-icon class="white--text" @click="show = !show"></v-app-bar-nav-icon>
+
+<v-navigation-drawer v-model="show" app class="indigo">
+    <p>test</p>
+</v-navigation-drawer>
+
+
+// home page
+
+<template>
+  <div class="home">
+
+    <div class="form-wrapper">
+      <h1 >Input Values</h1>
+      <hr><br>
+      <Form-cmp>
+          <Select-cmp :labelName="'FONT'" :items="fonts" @selected="font = $event" :validations="[isEmpty]"></select-cmp>
+          <Select-cmp :labelName="'COLOR'" :items="colors" @selected="color = $event" :validations="[isEmpty]"></select-cmp>
+          <Select-cmp :labelName="'TRUEVIEW DPI'" :items="dpiList" @selected="dpi = $event" :validations="[isEmpty]"></select-cmp>
+          <input-cmp  :labelName="'HEIGHT (IN)'" @input="height = $event" :validations="validations"></input-cmp>
+          <text-area-cmp :labelName="'TEXT'" @input="text = $event" :validations="[isEmpty]"></text-area-cmp>
+          <button-cmp :depressed="true" :name="'CREATE LETTERING'" :clickFn="handleSubmit"></button-cmp>
+      </Form-cmp>
+    </div>
+
+    <div class="image-wrapper">
+        <h1>Image Results</h1>
+        <hr><br>
+        <input-cmp  :labelName="'File'" @input="file = $event" ></input-cmp>
+        <img :src="image" alt="">
+        <p>{{convertToMM}}</p>
+        <p>{{text}}</p>
+        <p>{{font}}</p>
+        <p>{{color}}</p>
+        <p>{{dpi}}</p>
+        <p>{{apiInfo}}</p>
+    </div>
+    
+
+  </div>
+</template>
+
+<script>
+// @ is an alias to /src
+import InputCmp from '../components/Input.vue'
+import SelectCmp from '../components/Select.vue'
+import TextAreaCmp from '../components/Textarea.vue'
+import FormCmp from '../components/Form.vue'
+import ButtonCmp from '../components/Button.vue'
+import image from '../../public/images/img_place_holder.png'
+
+export default {
+
+  name: 'Home',
+  data() {
+    return {
+      fonts: ['Athletica', 'engraver', 'fishtails', 'comics', 'Veranda'],
+      colors: ['Red', 'Blue', "Green", "Black", "Gold"],
+      dpiList: [72, 96, 128, 150, 192],
+      validations: [this.isEmpty, this.isNumber, this.inRange],
+      font: "",
+      color: "",
+      dpi: "",
+      height: 0.0,
+      text: "",
+      apiInfo: "",
+      file: "",
+      image: image
+    }
+  },
+  components: {
+    InputCmp,
+    FormCmp,
+    SelectCmp,
+    ButtonCmp,
+    TextAreaCmp
+  },
+  computed: {
+    convertToMM() {
+      return parseFloat(this.height) * 25.4
+    }
+  },
+  methods: {
+    isEmpty(val) {
+        if (val === "") {
+          return 'Field cannot be empty'
+        } else {
+          return true
+        }
+    },
+    isNumber(val) {
+        if(isNaN(val)) {
+          return "Input must be a number"
+        } else {
+          return true
+        }
+    },
+    inRange(val) {
+        let num = parseFloat(val)
+
+        if (num >= 0.19685 && num <= 1.9685) {
+          return true 
+        } else {
+          return "Please enter the number between 0.19685 to 1.9685"
+        }
+    },
+    handleSubmit() {
+      this.axios
+        .get('https://api.coindesk.com/v1/bpi/currentprice.json')
+        .then(response => (this.apiInfo = response))
+    } 
+  }
+}
+</script>
+
+<style  scoped>
+
+    h1 {
+      color: rgb(139,139,139)
+    }
+
+    .form-wrapper {
+      width: 30%;
+      height: 60%;
+
+    }
+
+    .image-wrapper {
+      width: 30%;
+      height: 60%;
+    }
+
+    .home {
+      height: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+</style>
